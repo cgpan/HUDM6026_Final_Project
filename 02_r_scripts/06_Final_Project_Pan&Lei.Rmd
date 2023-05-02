@@ -58,11 +58,11 @@ The simple linear regression model presented that the overall model can explain 
   
   
 ```{r}
-dat_gen <- function(size= 500,# smaple size
-                    betas,# a numeric array of betas
-                    iv_mean, # predictor's mean
-                    iv_var, # predictor's variance
-                    error_sd){ # residuals' sd
+dat_gen <- function(size= 500,  # smaple size
+                    betas,      # a numeric array of betas
+                    iv_mean,    # predictor's mean
+                    iv_var,     # predictor's variance
+                    error_sd){  # residuals' sd
   # data mainly are generated from a normal distribution ~ N(iv_mean, iv_sd)
   X <- rnorm(size, mean = iv_mean, sd= sqrt(iv_var))
   X_aug <- cbind(1, X)
@@ -84,12 +84,13 @@ reg <- function(ds) {
   y <- as.matrix(ds[,1])
   y_cen <- apply(y, 2, function(x) x-mean(x))
   x_cen <- apply(x, 2, function(x) x-mean(x))
+  # the OLS method
   b1 <- sum(x_cen*y_cen)/sum(x_cen^2)
   b0 <- mean(y - x*b1)
-  
   y_hat <- b0 + x*b1
   sse <- sum((y-y_hat)^2)
   sig_sq <- sse/(nrow(x)-2)
+  # the alternative method
   b1_a <- sum(y_cen/x_cen)/nrow(x)
   b0_a <- mean(y - x*b1_a)
   y_hat_a <- b0_a + x*b1_a
@@ -99,6 +100,38 @@ reg <- function(ds) {
   return(out_)
 }
 ```  
-The estimation function takes the simulated data frame as input, and returns the estimated $\beta_0$,  $\beta_1$, residual's variance $\sigma^2$ from two estimation methods.
+The estimation function takes the simulated data frame as input, and returns the estimated $\beta_0$,  $\beta_1$, residual's variance $\sigma^2$ from both least square and alternative methods.  
+
+## 4.0 Monte Carlo Simulation  
+
+The basic idea behind the Monte Carlo simulation is that one can draw a large number of random samples from a probability distribution representing the population being studied, and then these samples are used to estimate its statistical properties. This project used Monte Carlo method to draw 1000 random samples with the size of 40 by using the `dat_gen()` function above. 
+```{r}
+R <- 1000
+set.seed(666)
+# randomly generate 1000 samples
+dat_list <- replicate(n = R,
+                      expr = dat_gen(size = 40,
+                                     betas = c(-0.265,0.053),
+                                     iv_mean = 51.24985, iv_var = 100.6209,
+                                     error_sd = 0.7693),
+                      simplify = FALSE)
+# estimated the simple regression model on each sample
+estimates <- sapply(X = dat_list,
+                    FUN = reg,
+                    simplify = TRUE)
+estimates <- t(estimates)
+colnames(estimates) <- c("b0", "b1", "sig_sq", "b0_a", "b1_a", "sig_sq_a")
+(estimates_hat_mean <- round(apply(estimates,2,mean),3))
+(estimates_hat_sd <- round(apply(estimates,2,sd),3))
+0.7693^2
+```  
+
+
+
+
+
+
+
+
 
 

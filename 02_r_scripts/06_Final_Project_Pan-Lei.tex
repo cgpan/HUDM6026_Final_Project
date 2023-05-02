@@ -186,11 +186,11 @@ make any sense, but we ignored this issue and move on the study.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\SpecialCharTok{\textgreater{}}\NormalTok{ dat\_gen }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(}\AttributeTok{size=} \DecValTok{500}\NormalTok{,}\CommentTok{\# smaple size}
-\SpecialCharTok{+}\NormalTok{                     betas,}\CommentTok{\# a numeric array of betas}
-\SpecialCharTok{+}\NormalTok{                     iv\_mean, }\CommentTok{\# predictor\textquotesingle{}s mean}
-\SpecialCharTok{+}\NormalTok{                     iv\_var, }\CommentTok{\# predictor\textquotesingle{}s variance}
-\SpecialCharTok{+}\NormalTok{                     error\_sd)\{ }\CommentTok{\# residuals\textquotesingle{} sd}
+\SpecialCharTok{\textgreater{}}\NormalTok{ dat\_gen }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(}\AttributeTok{size=} \DecValTok{500}\NormalTok{,  }\CommentTok{\# smaple size}
+\SpecialCharTok{+}\NormalTok{                     betas,      }\CommentTok{\# a numeric array of betas}
+\SpecialCharTok{+}\NormalTok{                     iv\_mean,    }\CommentTok{\# predictor\textquotesingle{}s mean}
+\SpecialCharTok{+}\NormalTok{                     iv\_var,     }\CommentTok{\# predictor\textquotesingle{}s variance}
+\SpecialCharTok{+}\NormalTok{                     error\_sd)\{  }\CommentTok{\# residuals\textquotesingle{} sd}
 \SpecialCharTok{+}   \CommentTok{\# data mainly are generated from a normal distribution \textasciitilde{} N(iv\_mean, iv\_sd)}
 \SpecialCharTok{+}\NormalTok{   X }\OtherTok{\textless{}{-}} \FunctionTok{rnorm}\NormalTok{(size, }\AttributeTok{mean =}\NormalTok{ iv\_mean, }\AttributeTok{sd=} \FunctionTok{sqrt}\NormalTok{(iv\_var))}
 \SpecialCharTok{+}\NormalTok{   X\_aug }\OtherTok{\textless{}{-}} \FunctionTok{cbind}\NormalTok{(}\DecValTok{1}\NormalTok{, X)}
@@ -218,12 +218,13 @@ predictor in the second.
 \SpecialCharTok{+}\NormalTok{   y }\OtherTok{\textless{}{-}} \FunctionTok{as.matrix}\NormalTok{(ds[,}\DecValTok{1}\NormalTok{])}
 \SpecialCharTok{+}\NormalTok{   y\_cen }\OtherTok{\textless{}{-}} \FunctionTok{apply}\NormalTok{(y, }\DecValTok{2}\NormalTok{, }\ControlFlowTok{function}\NormalTok{(x) x}\SpecialCharTok{{-}}\FunctionTok{mean}\NormalTok{(x))}
 \SpecialCharTok{+}\NormalTok{   x\_cen }\OtherTok{\textless{}{-}} \FunctionTok{apply}\NormalTok{(x, }\DecValTok{2}\NormalTok{, }\ControlFlowTok{function}\NormalTok{(x) x}\SpecialCharTok{{-}}\FunctionTok{mean}\NormalTok{(x))}
+\SpecialCharTok{+}   \CommentTok{\# the OLS method}
 \SpecialCharTok{+}\NormalTok{   b1 }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(x\_cen}\SpecialCharTok{*}\NormalTok{y\_cen)}\SpecialCharTok{/}\FunctionTok{sum}\NormalTok{(x\_cen}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{)}
 \SpecialCharTok{+}\NormalTok{   b0 }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(y }\SpecialCharTok{{-}}\NormalTok{ x}\SpecialCharTok{*}\NormalTok{b1)}
-\SpecialCharTok{+}   
 \SpecialCharTok{+}\NormalTok{   y\_hat }\OtherTok{\textless{}{-}}\NormalTok{ b0 }\SpecialCharTok{+}\NormalTok{ x}\SpecialCharTok{*}\NormalTok{b1}
 \SpecialCharTok{+}\NormalTok{   sse }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{((y}\SpecialCharTok{{-}}\NormalTok{y\_hat)}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{)}
 \SpecialCharTok{+}\NormalTok{   sig\_sq }\OtherTok{\textless{}{-}}\NormalTok{ sse}\SpecialCharTok{/}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(x)}\SpecialCharTok{{-}}\DecValTok{2}\NormalTok{)}
+\SpecialCharTok{+}   \CommentTok{\# the alternative method}
 \SpecialCharTok{+}\NormalTok{   b1\_a }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(y\_cen}\SpecialCharTok{/}\NormalTok{x\_cen)}\SpecialCharTok{/}\FunctionTok{nrow}\NormalTok{(x)}
 \SpecialCharTok{+}\NormalTok{   b0\_a }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(y }\SpecialCharTok{{-}}\NormalTok{ x}\SpecialCharTok{*}\NormalTok{b1\_a)}
 \SpecialCharTok{+}\NormalTok{   y\_hat\_a }\OtherTok{\textless{}{-}}\NormalTok{ b0\_a }\SpecialCharTok{+}\NormalTok{ x}\SpecialCharTok{*}\NormalTok{b1\_a}
@@ -237,6 +238,43 @@ predictor in the second.
 
 The estimation function takes the simulated data frame as input, and
 returns the estimated \(\beta_0\), \(\beta_1\), residual's variance
-\(\sigma^2\) from two estimation methods.
+\(\sigma^2\) from both least square and alternative methods.
+
+\hypertarget{monte-carlo-simulation}{%
+\subsection{4.0 Monte Carlo Simulation}\label{monte-carlo-simulation}}
+
+The basic idea behind the Monte Carlo simulation is that one can draw a
+large number of random samples from a probability distribution
+representing the population being studied, and then these samples are
+used to estimate its statistical properties. This project used Monte
+Carlo method to draw 1000 random samples with the size of 40 by using
+the \texttt{dat\_gen()} function above.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\SpecialCharTok{\textgreater{}}\NormalTok{ R }\OtherTok{\textless{}{-}} \DecValTok{1000}
+\SpecialCharTok{\textgreater{}} \FunctionTok{set.seed}\NormalTok{(}\DecValTok{666}\NormalTok{)}
+\SpecialCharTok{\textgreater{}} \CommentTok{\# randomly generate 1000 samples}
+\ErrorTok{\textgreater{}}\NormalTok{ dat\_list }\OtherTok{\textless{}{-}} \FunctionTok{replicate}\NormalTok{(}\AttributeTok{n =}\NormalTok{ R,}
+\SpecialCharTok{+}                       \AttributeTok{expr =} \FunctionTok{dat\_gen}\NormalTok{(}\AttributeTok{size =} \DecValTok{40}\NormalTok{,}
+\SpecialCharTok{+}                                      \AttributeTok{betas =} \FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\FloatTok{0.265}\NormalTok{,}\FloatTok{0.053}\NormalTok{),}
+\SpecialCharTok{+}                                      \AttributeTok{iv\_mean =} \FloatTok{51.24985}\NormalTok{, }\AttributeTok{iv\_var =} \FloatTok{100.6209}\NormalTok{,}
+\SpecialCharTok{+}                                      \AttributeTok{error\_sd =} \FloatTok{0.7693}\NormalTok{),}
+\SpecialCharTok{+}                       \AttributeTok{simplify =} \ConstantTok{FALSE}\NormalTok{)}
+\SpecialCharTok{\textgreater{}} \CommentTok{\# estimated the simple regression model on each sample}
+\ErrorTok{\textgreater{}}\NormalTok{ estimates }\OtherTok{\textless{}{-}} \FunctionTok{sapply}\NormalTok{(}\AttributeTok{X =}\NormalTok{ dat\_list,}
+\SpecialCharTok{+}                     \AttributeTok{FUN =}\NormalTok{ reg,}
+\SpecialCharTok{+}                     \AttributeTok{simplify =} \ConstantTok{TRUE}\NormalTok{)}
+\SpecialCharTok{\textgreater{}}\NormalTok{ estimates }\OtherTok{\textless{}{-}} \FunctionTok{t}\NormalTok{(estimates)}
+\SpecialCharTok{\textgreater{}} \FunctionTok{colnames}\NormalTok{(estimates) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"b0"}\NormalTok{, }\StringTok{"b1"}\NormalTok{, }\StringTok{"sig\_sq"}\NormalTok{, }\StringTok{"b0\_a"}\NormalTok{, }\StringTok{"b1\_a"}\NormalTok{, }\StringTok{"sig\_sq\_a"}\NormalTok{)}
+\SpecialCharTok{\textgreater{}}\NormalTok{ (estimates\_hat\_mean }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(}\FunctionTok{apply}\NormalTok{(estimates,}\DecValTok{2}\NormalTok{,mean),}\DecValTok{3}\NormalTok{))}
+\NormalTok{      b0       b1   sig\_sq     b0\_a     b1\_a sig\_sq\_a }
+  \SpecialCharTok{{-}}\FloatTok{0.265}    \FloatTok{0.053}    \FloatTok{0.585}   \SpecialCharTok{{-}}\FloatTok{5.143}    \FloatTok{0.146}  \FloatTok{121.727} 
+\SpecialCharTok{\textgreater{}}\NormalTok{ (estimates\_hat\_sd }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(}\FunctionTok{apply}\NormalTok{(estimates,}\DecValTok{2}\NormalTok{,sd),}\DecValTok{3}\NormalTok{))}
+\NormalTok{      b0       b1   sig\_sq     b0\_a     b1\_a sig\_sq\_a }
+   \FloatTok{0.645}    \FloatTok{0.012}    \FloatTok{0.131}   \FloatTok{59.657}    \FloatTok{1.148}  \FloatTok{935.836} 
+\end{Highlighting}
+\end{Shaded}
+
 
 \end{document}
