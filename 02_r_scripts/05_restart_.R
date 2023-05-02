@@ -31,10 +31,10 @@ dat_gen <- function(size= 500,
 }
 
 
-# dat_gen runs well, next write the funciton of coefficient estimation
-reg <- function(y,x) {
-  x <- as.matrix(x)
-  y <- as.matrix(y)
+# dat_gen runs well, next write the function of coefficient estimation
+reg <- function(ds) {
+  x <- as.matrix(ds[,2])
+  y <- as.matrix(ds[,1])
   y_cen <- apply(y, 2, function(x) x-mean(x))
   x_cen <- apply(x, 2, function(x) x-mean(x))
   b1 <- sum(x_cen*y_cen)/sum(x_cen^2)
@@ -51,14 +51,69 @@ reg <- function(y,x) {
   out_ <- cbind(b0, b1, sig_sq, b0_a, b1_a,sig_sq_a)
   return(out_)
 }
-x <- hsls_sub$X1TXMTSCOR
-y <- hsls_sub$X3TGPASTEM
 
-reg(y,x)
+# the function runs well. Next, using Monte Carlo method to do simulation
+# set the iteration time
+R <- 1000
+set.seed(666)
+dat_list <- replicate(n = R,
+                      expr = dat_gen(size = 40,
+                                     betas = c(-0.265,0.053),
+                                     iv_mean = 0, iv_var = 1,
+                                     error_sd = 1),
+                      simplify = FALSE)
+
+estimates <- sapply(X = dat_list,
+                    FUN = reg,
+                    simplify = TRUE)
+estimates <- t(estimates)
+colnames(estimates) <- c("b0", "b1", "sig_sq", "b0_a", "b1_a", "sig_sq_a")
+
+hist(estimates[,2])
+hist(estimates[,3])
+plot(estimates[,3])
+plot(estimates[,5])
+plot(estimates[,6])
+
+(estimates_hat_median <- round(apply(estimates,2,median),3))
+(estimates_hat_mean <- round(apply(estimates,2,mean),3))
+
+# ----------------------------
+# bootstrapping method
+# ----------------------------
+
+# generate a single dataset
+data_b <-dat_gen(size = 40,betas = c(-0.265,0.053),
+                iv_mean = 0, iv_var = 1,
+                error_sd = 1)
+# run bootstrapping on this single dataset
+B = 1000
+boot_index <- replicate(n=B,
+                       expr = sample(1:40, 40, TRUE),
+                       simplify = FALSE)
+boot_samp <- list()
+for (i in 1:1000) {
+  boot_unit <- data_b[boot_index[[1]],]
+  boot_samp[[i]] <- boot_unit
+}
 
 
-test <- dat_gen(size = 50, betas = c(-0.265,0.053), 
+
+
+
+# ----------------------------
+# test area
+# ----------------------------
+
+d1 <- dat_list[[1]]
+d1 <- as.matrix(d1)
+x <- d1[,1]
+class(x)
+reg(d1)
+
+test <- dat_gen(size = 400000, betas = c(-0.265,0.053), 
                 iv_mean = 51.24985, iv_var = 100.6209, error_sd = 0.7693)
+test <- dat_gen(size = 200000, betas = c(-0.265,0.053), 
+                iv_mean = 0, iv_var = 1, error_sd = 1)
 
-model_test <- lm(Y ~ X1, data = test)
-summary(model_test)
+
