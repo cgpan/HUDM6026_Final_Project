@@ -30,6 +30,33 @@ dat_gen <- function(size= 500,
   return(as.data.frame(out))
 }
 
+
+# dat_gen runs well, next write the funciton of coefficient estimation
+reg <- function(y,x) {
+  x <- as.matrix(x)
+  y <- as.matrix(y)
+  y_cen <- apply(y, 2, function(x) x-mean(x))
+  x_cen <- apply(x, 2, function(x) x-mean(x))
+  b1 <- sum(x_cen*y_cen)/sum(x_cen^2)
+  b0 <- mean(y - x*b1)
+  
+  y_hat <- b0 + x*b1
+  sse <- sum((y-y_hat)^2)
+  sig_sq <- sse/(nrow(x)-2)
+  b1_a <- sum(y_cen/x_cen)/nrow(x)
+  b0_a <- mean(y - x*b1_a)
+  y_hat_a <- b0_a + x*b1_a
+  sse_a <- sum((y-y_hat_a)^2)
+  sig_sq_a <- sse_a/nrow(x)
+  out_ <- cbind(b0, b1, sig_sq, b0_a, b1_a,sig_sq_a)
+  return(out_)
+}
+x <- hsls_sub$X1TXMTSCOR
+y <- hsls_sub$X3TGPASTEM
+
+reg(y,x)
+
+
 test <- dat_gen(size = 50, betas = c(-0.265,0.053), 
                 iv_mean = 51.24985, iv_var = 100.6209, error_sd = 0.7693)
 
