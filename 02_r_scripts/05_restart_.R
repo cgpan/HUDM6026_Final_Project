@@ -79,7 +79,7 @@ plot(estimates[,6])
 (estimates_hat_mean <- round(apply(estimates,2,mean),3))
 
 # ----------------------------
-# bootstrapping method
+# bootstrapping method 06 
 # ----------------------------
 
 # generate a single dataset
@@ -88,16 +88,57 @@ data_b <-dat_gen(size = 40,betas = c(-0.265,0.053),
                 error_sd = 1)
 # run bootstrapping on this single dataset
 B = 1000
+# shuffle the 1:40 index rather than data_b
 boot_index <- replicate(n=B,
                        expr = sample(1:40, 40, TRUE),
                        simplify = FALSE)
+# use the bootstapped index to exracted the data
 boot_samp <- list()
 for (i in 1:1000) {
-  boot_unit <- data_b[boot_index[[1]],]
+  boot_unit <- data_b[boot_index[[i]],]
   boot_samp[[i]] <- boot_unit
 }
+estimates <- sapply(X = boot_samp,
+                    FUN = reg,
+                    simplify = TRUE)
+estimates <- t(estimates)
+colnames(estimates) <- c("b0", "b1", "sig_sq", "b0_a", "b1_a", "sig_sq_a")
+head(estimates)
+hist(estimates[,2])
+hist(estimates[,3])
+plot(estimates[,3])
+plot(estimates[,5])
+plot(estimates[,6])
+
+(estimates_hat_median <- round(apply(estimates,2,median),3))
+(estimates_hat_mean <- round(apply(estimates,2,mean),3))
 
 
+# ----------------------------
+# jacknife method 06 leave one observation each time
+# ----------------------------
+head(data_b)
+
+jack_list <- list()
+for (i in 1:40) {
+  data_loov <- data_b[-i,]
+  jack_list[[i]] <- data_loov
+}
+
+estimates <- sapply(X = boot_samp,
+                    FUN = reg,
+                    simplify = TRUE)
+estimates <- t(estimates)
+colnames(estimates) <- c("b0", "b1", "sig_sq", "b0_a", "b1_a", "sig_sq_a")
+head(estimates)
+hist(estimates[,2])
+hist(estimates[,3])
+plot(estimates[,3])
+plot(estimates[,5])
+plot(estimates[,6])
+
+(estimates_hat_median <- round(apply(estimates,2,median),3))
+(estimates_hat_mean <- round(apply(estimates,2,mean),3))
 
 
 
