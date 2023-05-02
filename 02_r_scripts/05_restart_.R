@@ -13,6 +13,8 @@ var(hsls_sub$X1TXMTSCOR)
 # X3TGPASTEM = -0.265 + 0.053*X1TXMTSCOR
 # sd for residual: 0.7693
 # number of observations: 19948
+# variance of the predictor: 100.6209
+# mean of the predictor: 51.24985
 
 # write the data gen function for dat_gen
 
@@ -52,6 +54,10 @@ reg <- function(ds) {
   return(out_)
 }
 
+
+# ----------------------------
+# Monte Carlo Simulation
+# ----------------------------
 # the function runs well. Next, using Monte Carlo method to do simulation
 # set the iteration time
 R <- 1000
@@ -59,8 +65,8 @@ set.seed(666)
 dat_list <- replicate(n = R,
                       expr = dat_gen(size = 40,
                                      betas = c(-0.265,0.053),
-                                     iv_mean = 0, iv_var = 1,
-                                     error_sd = 1),
+                                     iv_mean = 51.24985, iv_var = 100.6209,
+                                     error_sd = 0.7693),
                       simplify = FALSE)
 
 estimates <- sapply(X = dat_list,
@@ -77,6 +83,8 @@ plot(estimates[,6])
 
 (estimates_hat_median <- round(apply(estimates,2,median),3))
 (estimates_hat_mean <- round(apply(estimates,2,mean),3))
+(estimates_hat_sd <- round(apply(estimates,2,sd),3))
+
 
 # ----------------------------
 # bootstrapping method 06 
@@ -84,8 +92,8 @@ plot(estimates[,6])
 
 # generate a single dataset
 data_b <-dat_gen(size = 40,betas = c(-0.265,0.053),
-                iv_mean = 0, iv_var = 1,
-                error_sd = 1)
+                iv_mean = 51.24985, iv_var = 100.6209,
+                error_sd = 0.7693)
 # run bootstrapping on this single dataset
 B = 1000
 # shuffle the 1:40 index rather than data_b
@@ -125,7 +133,7 @@ for (i in 1:40) {
   jack_list[[i]] <- data_loov
 }
 
-estimates <- sapply(X = boot_samp,
+estimates <- sapply(X = jack_list,
                     FUN = reg,
                     simplify = TRUE)
 estimates <- t(estimates)

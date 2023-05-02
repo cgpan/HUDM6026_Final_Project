@@ -1,0 +1,104 @@
+---
+title: "HUDM6026 Final Project"
+author: Chenguang Pan & Seng Lei
+date: April 28, 2023
+output:
+  pdf_document:
+    toc: false
+    toc_depth: 6
+    number_sections: false
+    keep_tex: true
+    highlight: tang
+---
+
+```{r setup, include=FALSE}
+## Global options
+knitr::opts_chunk$set(
+  cache = TRUE,
+  prompt = TRUE,
+  comment = '',
+  collapse = TRUE,
+     message = FALSE)
+```   
+
+## 1.0 Introduction  
+
+High School Longitudinal Study of 2009(HSLS:09) is a nationally representative, longitudinal study of 23,000+ ninth graders from 944 schools in 2009. It provides comprehensive information about student's background, academic performance in both high school and college, personal attitudes towards study and school, etc. Therefore, this current project uses the HSLS:09 open dataset.    
+
+This study analyzed a large dataset consisting of 23,503 observations and 9,614 variables to investigate the potential relationship between ninth-grade mathematics foundation and future achievement in STEM fields. To accomplish this objective, a simple linear regression model was employed, which allowed for the estimation of the effect of math proficiency on overall GPA in STEM courses throughout high school. The standardized mathematics assessment of algebraic reasoning, administered during the first semester of grade 9, was utilized to measure students' mathematical abilities at the onset of high school. In turn, the overall GPA in STEM courses was used as a metric of academic performance in STEM subjects throughout the high school years.
+  
+  
+After some data cleaning, we kept 199,948 observations for analysis. The simple linear model is: $$y_i = \beta_0 + \beta_1\times x_i + e_i ,$$ where $y_i$ is the estimated individual outcome for overall STEM GPA, $x_i$ is the student's mathematics assessment score, and $e_i$ is the measurement error.
+
+## 2.0 Population data descriptions
+
+```{r, echo=FALSE,results="hide"}
+load("~/Desktop/PhD_Learning/HUDM6026 Computational Statistics/HUDM6026_Final_Project/01_data/02_processed_data/hsls_sub.rdata")
+(n = dim(hsls_sub)[1])
+(mu_stem = mean(hsls_sub$X3TGPASTEM))
+(mu_scor = mean(hsls_sub$X1TXMTSCOR))
+(sd_stem = sd(hsls_sub$X3TGPASTEM))
+(sd_scor = sd(hsls_sub$X1TXMTSCOR))
+table(hsls_sub$X3TGPASTEM)
+cor(hsls_sub$X3TGPASTEM,hsls_sub$X1TXMTSCOR)
+# plot(hsls_sub$X3TGPASTEM,hsls_sub$X1TXMTSCOR)
+# plot(hsls_sub$X1TXMTSCOR,hsls_sub$X3TGPASTEM)
+```  
+As a simulated study, we treated cleaned dataset as the population, *N*=`r n`. The mean and standard deviation for the dependent variable are 2.440 and .934. And 51.250 and 10.031 for the predictor. The correlation coefficient between these two variables is .567.  
+
+```{r}
+model_lm <- lm(X3TGPASTEM ~ X1TXMTSCOR, data = hsls_sub)
+summary(model_lm)
+```  
+
+The simple linear regression model presented that the overall model can explain the 32.15% of the variance in outcome, $F(1,19946)=9452$, $p < .001$. One score increase in 9th grader's math assessment will be associated with .053 increase in overall STEM GPA and this relation is statistically significant, $\beta_1=.053$, $p <.001$. The expected value of overall STEM GPA (i.e., $\beta_0$) when student gets zero in math assessment is $-.265$, $p <.001$. The negative GPA does not make any sense, but we ignored this issue and move on the study.  
+
+
+## 3.0 Writing R functions  
+  
+  
+```{r}
+dat_gen <- function(size= 500,# smaple size
+                    betas,# a numeric array of betas
+                    iv_mean, # predictor's mean
+                    iv_var, # predictor's variance
+                    error_sd){ # residuals' sd
+  # data mainly are generated from a normal distribution ~ N(iv_mean, iv_sd)
+  X <- rnorm(size, mean = iv_mean, sd= sqrt(iv_var))
+  X_aug <- cbind(1, X)
+  # residuals are generated from ~N(0, sd)
+  Error <- rnorm(size, mean=0, sd=error_sd)
+  # based on the parameters to generate the outcomes
+  Y <- X_aug %*% as.matrix(betas) + Error
+  out <- cbind(Y, X)
+  colnames(out) <- c("Y", "X1")
+  return(as.data.frame(out))
+}
+```   
+The data generation function takes the sample size, regression coefficients, predictors' mean and variance, and the standard deviation of residual as input. It returns a simulated dataset in `dataframe` format with the outcome in the first column and predictor in the second. 
+
+
+```{r}
+reg <- function(ds) {
+  x <- as.matrix(ds[,2])
+  y <- as.matrix(ds[,1])
+  y_cen <- apply(y, 2, function(x) x-mean(x))
+  x_cen <- apply(x, 2, function(x) x-mean(x))
+  b1 <- sum(x_cen*y_cen)/sum(x_cen^2)
+  b0 <- mean(y - x*b1)
+  
+  y_hat <- b0 + x*b1
+  sse <- sum((y-y_hat)^2)
+  sig_sq <- sse/(nrow(x)-2)
+  b1_a <- sum(y_cen/x_cen)/nrow(x)
+  b0_a <- mean(y - x*b1_a)
+  y_hat_a <- b0_a + x*b1_a
+  sse_a <- sum((y-y_hat_a)^2)
+  sig_sq_a <- sse_a/nrow(x)
+  out_ <- cbind(b0, b1, sig_sq, b0_a, b1_a,sig_sq_a)
+  return(out_)
+}
+```  
+The estimation function takes the simulated data frame as input, and returns the estimated $\beta_0$,  $\beta_1$, residual's variance $\sigma^2$ from two estimation methods.
+
+
