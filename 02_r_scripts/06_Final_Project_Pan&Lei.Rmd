@@ -122,9 +122,20 @@ estimates <- sapply(X = dat_list,
 estimates <- t(estimates)
 colnames(estimates) <- c("b0", "b1", "sig_sq", "b0_a", "b1_a", "sig_sq_a")
 (estimates_hat_mean <- round(apply(estimates,2,mean),3))
-(estimates_hat_sd <- round(apply(estimates,2,sd),3))
-0.7693^2
+(estimates_hat_var <- round(apply(estimates,2,var),3))
+(estimates_hat_se <- round(apply(estimates,2,function(x) sd(x)/sqrt(R)),3))
+
+# to calculate the MSE
+# first to make a parameter matrix in shape of the estimates matrix
+theta_m <- matrix(c(-0.265, 0.053,0.7693), nrow(estimates),6 , byrow = T)
+# use the estimates matrix minus the parameter matrix
+est_cent <-estimates-theta_m
+# use apply to get the mse for each estimates
+(estimates_mse <- round(apply(est_cent,2,function(x) sum(x^2)/R),3))
 ```  
+Next, we wrote a function to calculate the mean squared error of estimators based on trimmed mean.  
+
+
 
 
 

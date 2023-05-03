@@ -270,11 +270,26 @@ the \texttt{dat\_gen()} function above.
 \SpecialCharTok{\textgreater{}}\NormalTok{ (estimates\_hat\_mean }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(}\FunctionTok{apply}\NormalTok{(estimates,}\DecValTok{2}\NormalTok{,mean),}\DecValTok{3}\NormalTok{))}
 \NormalTok{      b0       b1   sig\_sq     b0\_a     b1\_a sig\_sq\_a }
   \SpecialCharTok{{-}}\FloatTok{0.265}    \FloatTok{0.053}    \FloatTok{0.585}   \SpecialCharTok{{-}}\FloatTok{5.143}    \FloatTok{0.146}  \FloatTok{121.727} 
-\SpecialCharTok{\textgreater{}}\NormalTok{ (estimates\_hat\_sd }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(}\FunctionTok{apply}\NormalTok{(estimates,}\DecValTok{2}\NormalTok{,sd),}\DecValTok{3}\NormalTok{))}
+\SpecialCharTok{\textgreater{}}\NormalTok{ (estimates\_hat\_var }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(}\FunctionTok{apply}\NormalTok{(estimates,}\DecValTok{2}\NormalTok{,var),}\DecValTok{3}\NormalTok{))}
+\NormalTok{        b0         b1     sig\_sq       b0\_a       b1\_a   sig\_sq\_a }
+     \FloatTok{0.415}      \FloatTok{0.000}      \FloatTok{0.017}   \FloatTok{3558.920}      \FloatTok{1.317} \FloatTok{875788.198} 
+\SpecialCharTok{\textgreater{}}\NormalTok{ (estimates\_hat\_se }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(}\FunctionTok{apply}\NormalTok{(estimates,}\DecValTok{2}\NormalTok{,}\ControlFlowTok{function}\NormalTok{(x) }\FunctionTok{sd}\NormalTok{(x)}\SpecialCharTok{/}\FunctionTok{sqrt}\NormalTok{(R)),}\DecValTok{3}\NormalTok{))}
 \NormalTok{      b0       b1   sig\_sq     b0\_a     b1\_a sig\_sq\_a }
-   \FloatTok{0.645}    \FloatTok{0.012}    \FloatTok{0.131}   \FloatTok{59.657}    \FloatTok{1.148}  \FloatTok{935.836} 
+   \FloatTok{0.020}    \FloatTok{0.000}    \FloatTok{0.004}    \FloatTok{1.887}    \FloatTok{0.036}   \FloatTok{29.594} 
+\SpecialCharTok{\textgreater{}} 
+\ErrorTok{\textgreater{}} \CommentTok{\# to calculate the MSE}
+\ErrorTok{\textgreater{}} \CommentTok{\# first to make a parameter matrix in shape of the estimates matrix}
+\ErrorTok{\textgreater{}}\NormalTok{ theta\_m }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\FloatTok{0.265}\NormalTok{, }\FloatTok{0.053}\NormalTok{,}\FloatTok{0.7693}\NormalTok{), }\FunctionTok{nrow}\NormalTok{(estimates),}\DecValTok{6}\NormalTok{ , }\AttributeTok{byrow =}\NormalTok{ T)}
+\SpecialCharTok{\textgreater{}} \CommentTok{\# use the estimates matrix minus the parameter matrix}
+\ErrorTok{\textgreater{}}\NormalTok{ est\_cent }\OtherTok{\textless{}{-}}\NormalTok{estimates}\SpecialCharTok{{-}}\NormalTok{theta\_m}
+\SpecialCharTok{\textgreater{}} \CommentTok{\# use apply to get the mse for each estimates}
+\ErrorTok{\textgreater{}}\NormalTok{ (estimates\_mse }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(}\FunctionTok{apply}\NormalTok{(est\_cent,}\DecValTok{2}\NormalTok{,}\ControlFlowTok{function}\NormalTok{(x) }\FunctionTok{sum}\NormalTok{(x}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{)}\SpecialCharTok{/}\NormalTok{R),}\DecValTok{3}\NormalTok{))}
+\NormalTok{        b0         b1     sig\_sq       b0\_a       b1\_a   sig\_sq\_a }
+     \FloatTok{0.415}      \FloatTok{0.000}      \FloatTok{0.051}   \FloatTok{3579.161}      \FloatTok{1.324} \FloatTok{889543.113} 
 \end{Highlighting}
 \end{Shaded}
 
+Next, we wrote a function to calculate the mean squared error of
+estimators based on trimmed mean.
 
 \end{document}
