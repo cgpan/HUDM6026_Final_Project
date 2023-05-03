@@ -179,6 +179,41 @@ colnames(estimates) <- c("b0", "b1", "sig_sq", "b0_a", "b1_a", "sig_sq_a")
 est_out(estimates, B)
 ```  
 
+## 6.0 Jacknife method  
+
+The jackknife method is a statistical technique to estimate the bias and variance of a statistic by systematically leaving out one observation at a time from the dataset, creating a series of "jackknife samples". By recalculating the statistic of interest on each of these samples, we can obtain an approximation of the distribution of the statistic, and use it to estimate its bias and standard error. In the present context, we applied the jacknife method to the same 40-observation dataset.  
+
+```{r}
+jack_list <- list()
+for (i in 1:40) {
+  data_loov <- data_b[-i,]
+  jack_list[[i]] <- data_loov
+}
+
+
+estimates <- sapply(X = jack_list,
+                    FUN = reg,
+                    simplify = TRUE)
+estimates <- t(estimates)
+colnames(estimates) <- c("b0", "b1", "sig_sq", "b0_a", "b1_a", "sig_sq_a")
+
+# get the observed
+data_b_mean <- apply(data_b, 2, mean)
+# estimate the bias  
+# first to make a parameter matrix in shape of the estimates matrix
+theta_m <- matrix(c(-0.265, 0.053,0.7693), nrow(esti_mat),6 , byrow = T)
+# use the estimates matrix minus the parameter matrix
+est_cent <- esti_mat - theta_m
+# use apply to get the mse for each estimates
+estimates_hat_mean <- round(apply(esti_mat,2,mean),3)
+estimates_hat_var <- round(apply(esti_mat,2,var),3)
+estimates_hat_se <- round(apply(esti_mat,2,function(x) sd(x)/sqrt(size)),3)
+estimates_mse <- round(apply(est_cent,2,function(x) sum(x^2)/size),3)
+```  
+
+
+
+
 
 
 
