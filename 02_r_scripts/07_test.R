@@ -22,6 +22,7 @@ dim(theta)
 head(theta)
 head(estimates)
 est_cent <- estimates-theta_m
+par_m <- matrix(c(-0.265, 0.053,0.7693), 6,1)
 
 dim(estimates)
 
