@@ -121,9 +121,6 @@ estimates <- sapply(X = dat_list,
                     simplify = TRUE)
 estimates <- t(estimates)
 colnames(estimates) <- c("b0", "b1", "sig_sq", "b0_a", "b1_a", "sig_sq_a")
-(estimates_hat_mean <- round(apply(estimates,2,mean),3))
-(estimates_hat_var <- round(apply(estimates,2,var),3))
-(estimates_hat_se <- round(apply(estimates,2,function(x) sd(x)/sqrt(R)),3))
 
 # to calculate the MSE
 # first to make a parameter matrix in shape of the estimates matrix
@@ -131,9 +128,55 @@ theta_m <- matrix(c(-0.265, 0.053,0.7693), nrow(estimates),6 , byrow = T)
 # use the estimates matrix minus the parameter matrix
 est_cent <-estimates-theta_m
 # use apply to get the mse for each estimates
-(estimates_mse <- round(apply(est_cent,2,function(x) sum(x^2)/R),3))
+estimates_hat_mean <- round(apply(estimates,2,mean),3)
+estimates_hat_var <- round(apply(estimates,2,var),3)
+estimates_hat_se <- round(apply(estimates,2,function(x) sd(x)/sqrt(R)),3)
+estimates_mse <- round(apply(est_cent,2,function(x) sum(x^2)/R),3)
+results <- rbind(estimates_hat_mean,estimates_hat_var,
+                 estimates_hat_se,estimates_mse)
+rownames(results) <- c("Mean", "Variance","SE", "MSE")
+results_trans <- as.data.frame(t(results))
+# add a column to calculate the bias
+par_m <- matrix(c(-0.265, 0.053,0.7693), 6,1)
+results_trans$Bias <- results_trans$Mean - par_m
+results_trans$Parameter <- par_m
+(results_trans <- results_trans[,c(6,1,3,2,5,4)])
 ```  
-Next, we wrote a function to calculate the mean squared error of estimators based on trimmed mean.  
+
+## 5.0 Bootstrap method  
+
+The bootstrap method is a statistical technique that involves the repeated sampling with replacement from the original data to obtain estimates of variability and uncertainty of a statistic of interest. Specifically, the statistic is computed on each of the resamples, and the resulting distribution is used to calculate confidence intervals or conduct hypothesis tests. Since we have a single sample of 40 observations in this context, the bootstrap method is proposed to be applied to the row indices of the original dataset. Each resample would be created based on the shuffled indices of the original data, thus allowing for the generation of multiple estimates of the statistic of interest.  
+
+The R function for bootstrap is as follows.  
+```{r}
+# generate a single dataset
+data_b <-dat_gen(size = 40,betas = c(-0.265,0.053),
+                iv_mean = 51.24985, iv_var = 100.6209,
+                error_sd = 0.7693)
+# run bootstrapping on this single dataset
+B = 1000
+# shuffle the 1:40 index rather than data_b
+boot_index <- replicate(n=B,
+                       expr = sample(1:40, 40, TRUE),
+                       simplify = FALSE)
+# use the bootstrapped indices to extracted the data
+boot_samp <- list()
+for (i in 1:1000) {
+  boot_unit <- data_b[boot_index[[i]],]
+  boot_samp[[i]] <- boot_unit
+}
+estimates <- sapply(X = boot_samp,
+                    FUN = reg,
+                    simplify = TRUE)
+estimates <- t(estimates)
+colnames(estimates) <- c("b0", "b1", "sig_sq", "b0_a", "b1_a", "sig_sq_a")
+```  
+
+
+
+
+
+
 
 
 

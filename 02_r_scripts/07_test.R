@@ -15,6 +15,7 @@ a <- matrix(c(1,2,3,4),4,4)
 a
 b <- matrix(c(1,2,3,4),4,4,byrow = T)
 ab <- a-b
+ab^2
 sum(ab[,1]^2)
 theta_m <- matrix(c(-0.265, 0.053,0.7693), nrow(estimates),6 , byrow = T)
 dim(theta)
@@ -23,3 +24,7 @@ head(estimates)
 est_cent <- estimates-theta_m
 
 dim(estimates)
+
+121.135**2+875788.198
+0.093**2 + 1.317
+0.007*0.007 + 0.017

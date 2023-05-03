@@ -87,7 +87,7 @@ plot(estimates[,6])
 
 
 # ----------------------------
-# bootstrapping method 06 
+# bootstrap method 06 
 # ----------------------------
 
 # generate a single dataset
