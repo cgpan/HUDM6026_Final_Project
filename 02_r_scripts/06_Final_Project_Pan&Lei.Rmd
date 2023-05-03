@@ -122,25 +122,30 @@ estimates <- sapply(X = dat_list,
 estimates <- t(estimates)
 colnames(estimates) <- c("b0", "b1", "sig_sq", "b0_a", "b1_a", "sig_sq_a")
 
-# to calculate the MSE
-# first to make a parameter matrix in shape of the estimates matrix
-theta_m <- matrix(c(-0.265, 0.053,0.7693), nrow(estimates),6 , byrow = T)
-# use the estimates matrix minus the parameter matrix
-est_cent <-estimates-theta_m
-# use apply to get the mse for each estimates
-estimates_hat_mean <- round(apply(estimates,2,mean),3)
-estimates_hat_var <- round(apply(estimates,2,var),3)
-estimates_hat_se <- round(apply(estimates,2,function(x) sd(x)/sqrt(R)),3)
-estimates_mse <- round(apply(est_cent,2,function(x) sum(x^2)/R),3)
-results <- rbind(estimates_hat_mean,estimates_hat_var,
-                 estimates_hat_se,estimates_mse)
-rownames(results) <- c("Mean", "Variance","SE", "MSE")
-results_trans <- as.data.frame(t(results))
-# add a column to calculate the bias
-par_m <- matrix(c(-0.265, 0.053,0.7693), 6,1)
-results_trans$Bias <- results_trans$Mean - par_m
-results_trans$Parameter <- par_m
-(results_trans <- results_trans[,c(6,1,3,2,5,4)])
+# write a function to calculate the estimates
+est_out <- function(esti_mat, size){
+  # to calculate the MSE
+  # first to make a parameter matrix in shape of the estimates matrix
+  theta_m <- matrix(c(-0.265, 0.053,0.7693), nrow(esti_mat),6 , byrow = T)
+  # use the estimates matrix minus the parameter matrix
+  est_cent <-esti_mat-theta_m
+  # use apply to get the mse for each estimates
+  estimates_hat_mean <- round(apply(esti_mat,2,mean),3)
+  estimates_hat_var <- round(apply(esti_mat,2,var),3)
+  estimates_hat_se <- round(apply(esti_mat,2,function(x) sd(x)/sqrt(size)),3)
+  estimates_mse <- round(apply(est_cent,2,function(x) sum(x^2)/size),3)
+  results <- rbind(estimates_hat_mean,estimates_hat_var,
+                   estimates_hat_se,estimates_mse)
+  rownames(results) <- c("Mean", "Variance","SE", "MSE")
+  results_trans <- as.data.frame(t(results))
+  # add a column to calculate the bias
+  par_m <- matrix(c(-0.265, 0.053,0.7693), 6,1)
+  results_trans$Bias <- results_trans$Mean - par_m
+  results_trans$Parameter <- par_m
+  results_trans <- results_trans[,c(6,1,3,2,5,4)]
+  return(results_trans)
+}
+est_out(estimates, R)
 ```  
 
 ## 5.0 Bootstrap method  
@@ -170,6 +175,8 @@ estimates <- sapply(X = boot_samp,
                     simplify = TRUE)
 estimates <- t(estimates)
 colnames(estimates) <- c("b0", "b1", "sig_sq", "b0_a", "b1_a", "sig_sq_a")
+
+est_out(estimates, B)
 ```  
 
 

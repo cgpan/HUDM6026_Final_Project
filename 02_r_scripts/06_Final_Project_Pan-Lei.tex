@@ -268,25 +268,30 @@ the \texttt{dat\_gen()} function above.
 \SpecialCharTok{\textgreater{}}\NormalTok{ estimates }\OtherTok{\textless{}{-}} \FunctionTok{t}\NormalTok{(estimates)}
 \SpecialCharTok{\textgreater{}} \FunctionTok{colnames}\NormalTok{(estimates) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"b0"}\NormalTok{, }\StringTok{"b1"}\NormalTok{, }\StringTok{"sig\_sq"}\NormalTok{, }\StringTok{"b0\_a"}\NormalTok{, }\StringTok{"b1\_a"}\NormalTok{, }\StringTok{"sig\_sq\_a"}\NormalTok{)}
 \SpecialCharTok{\textgreater{}} 
-\ErrorTok{\textgreater{}} \CommentTok{\# to calculate the MSE}
-\ErrorTok{\textgreater{}} \CommentTok{\# first to make a parameter matrix in shape of the estimates matrix}
-\ErrorTok{\textgreater{}}\NormalTok{ theta\_m }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\FloatTok{0.265}\NormalTok{, }\FloatTok{0.053}\NormalTok{,}\FloatTok{0.7693}\NormalTok{), }\FunctionTok{nrow}\NormalTok{(estimates),}\DecValTok{6}\NormalTok{ , }\AttributeTok{byrow =}\NormalTok{ T)}
-\SpecialCharTok{\textgreater{}} \CommentTok{\# use the estimates matrix minus the parameter matrix}
-\ErrorTok{\textgreater{}}\NormalTok{ est\_cent }\OtherTok{\textless{}{-}}\NormalTok{estimates}\SpecialCharTok{{-}}\NormalTok{theta\_m}
-\SpecialCharTok{\textgreater{}} \CommentTok{\# use apply to get the mse for each estimates}
-\ErrorTok{\textgreater{}}\NormalTok{ estimates\_hat\_mean }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(}\FunctionTok{apply}\NormalTok{(estimates,}\DecValTok{2}\NormalTok{,mean),}\DecValTok{3}\NormalTok{)}
-\SpecialCharTok{\textgreater{}}\NormalTok{ estimates\_hat\_var }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(}\FunctionTok{apply}\NormalTok{(estimates,}\DecValTok{2}\NormalTok{,var),}\DecValTok{3}\NormalTok{)}
-\SpecialCharTok{\textgreater{}}\NormalTok{ estimates\_hat\_se }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(}\FunctionTok{apply}\NormalTok{(estimates,}\DecValTok{2}\NormalTok{,}\ControlFlowTok{function}\NormalTok{(x) }\FunctionTok{sd}\NormalTok{(x)}\SpecialCharTok{/}\FunctionTok{sqrt}\NormalTok{(R)),}\DecValTok{3}\NormalTok{)}
-\SpecialCharTok{\textgreater{}}\NormalTok{ estimates\_mse }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(}\FunctionTok{apply}\NormalTok{(est\_cent,}\DecValTok{2}\NormalTok{,}\ControlFlowTok{function}\NormalTok{(x) }\FunctionTok{sum}\NormalTok{(x}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{)}\SpecialCharTok{/}\NormalTok{R),}\DecValTok{3}\NormalTok{)}
-\SpecialCharTok{\textgreater{}}\NormalTok{ results }\OtherTok{\textless{}{-}} \FunctionTok{rbind}\NormalTok{(estimates\_hat\_mean,estimates\_hat\_var,}
-\SpecialCharTok{+}\NormalTok{                  estimates\_hat\_se,estimates\_mse)}
-\SpecialCharTok{\textgreater{}} \FunctionTok{rownames}\NormalTok{(results) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"Mean"}\NormalTok{, }\StringTok{"Variance"}\NormalTok{,}\StringTok{"SE"}\NormalTok{, }\StringTok{"MSE"}\NormalTok{)}
-\SpecialCharTok{\textgreater{}}\NormalTok{ results\_trans }\OtherTok{\textless{}{-}} \FunctionTok{as.data.frame}\NormalTok{(}\FunctionTok{t}\NormalTok{(results))}
-\SpecialCharTok{\textgreater{}} \CommentTok{\# add a column to calculate the bias}
-\ErrorTok{\textgreater{}}\NormalTok{ par\_m }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\FloatTok{0.265}\NormalTok{, }\FloatTok{0.053}\NormalTok{,}\FloatTok{0.7693}\NormalTok{), }\DecValTok{6}\NormalTok{,}\DecValTok{1}\NormalTok{)}
-\SpecialCharTok{\textgreater{}}\NormalTok{ results\_trans}\SpecialCharTok{$}\NormalTok{Bias }\OtherTok{\textless{}{-}}\NormalTok{ results\_trans}\SpecialCharTok{$}\NormalTok{Mean }\SpecialCharTok{{-}}\NormalTok{ par\_m}
-\SpecialCharTok{\textgreater{}}\NormalTok{ results\_trans}\SpecialCharTok{$}\NormalTok{Parameter }\OtherTok{\textless{}{-}}\NormalTok{ par\_m}
-\SpecialCharTok{\textgreater{}}\NormalTok{ (results\_trans }\OtherTok{\textless{}{-}}\NormalTok{ results\_trans[,}\FunctionTok{c}\NormalTok{(}\DecValTok{6}\NormalTok{,}\DecValTok{1}\NormalTok{,}\DecValTok{3}\NormalTok{,}\DecValTok{2}\NormalTok{,}\DecValTok{5}\NormalTok{,}\DecValTok{4}\NormalTok{)])}
+\ErrorTok{\textgreater{}} \CommentTok{\# write a function to calculate the estimates}
+\ErrorTok{\textgreater{}}\NormalTok{ est\_out }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(esti\_mat, size)\{}
+\SpecialCharTok{+}   \CommentTok{\# to calculate the MSE}
+\SpecialCharTok{+}   \CommentTok{\# first to make a parameter matrix in shape of the estimates matrix}
+\SpecialCharTok{+}\NormalTok{   theta\_m }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\FloatTok{0.265}\NormalTok{, }\FloatTok{0.053}\NormalTok{,}\FloatTok{0.7693}\NormalTok{), }\FunctionTok{nrow}\NormalTok{(esti\_mat),}\DecValTok{6}\NormalTok{ , }\AttributeTok{byrow =}\NormalTok{ T)}
+\SpecialCharTok{+}   \CommentTok{\# use the estimates matrix minus the parameter matrix}
+\SpecialCharTok{+}\NormalTok{   est\_cent }\OtherTok{\textless{}{-}}\NormalTok{esti\_mat}\SpecialCharTok{{-}}\NormalTok{theta\_m}
+\SpecialCharTok{+}   \CommentTok{\# use apply to get the mse for each estimates}
+\SpecialCharTok{+}\NormalTok{   estimates\_hat\_mean }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(}\FunctionTok{apply}\NormalTok{(esti\_mat,}\DecValTok{2}\NormalTok{,mean),}\DecValTok{3}\NormalTok{)}
+\SpecialCharTok{+}\NormalTok{   estimates\_hat\_var }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(}\FunctionTok{apply}\NormalTok{(esti\_mat,}\DecValTok{2}\NormalTok{,var),}\DecValTok{3}\NormalTok{)}
+\SpecialCharTok{+}\NormalTok{   estimates\_hat\_se }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(}\FunctionTok{apply}\NormalTok{(esti\_mat,}\DecValTok{2}\NormalTok{,}\ControlFlowTok{function}\NormalTok{(x) }\FunctionTok{sd}\NormalTok{(x)}\SpecialCharTok{/}\FunctionTok{sqrt}\NormalTok{(size)),}\DecValTok{3}\NormalTok{)}
+\SpecialCharTok{+}\NormalTok{   estimates\_mse }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(}\FunctionTok{apply}\NormalTok{(est\_cent,}\DecValTok{2}\NormalTok{,}\ControlFlowTok{function}\NormalTok{(x) }\FunctionTok{sum}\NormalTok{(x}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{)}\SpecialCharTok{/}\NormalTok{size),}\DecValTok{3}\NormalTok{)}
+\SpecialCharTok{+}\NormalTok{   results }\OtherTok{\textless{}{-}} \FunctionTok{rbind}\NormalTok{(estimates\_hat\_mean,estimates\_hat\_var,}
+\SpecialCharTok{+}\NormalTok{                    estimates\_hat\_se,estimates\_mse)}
+\SpecialCharTok{+}   \FunctionTok{rownames}\NormalTok{(results) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"Mean"}\NormalTok{, }\StringTok{"Variance"}\NormalTok{,}\StringTok{"SE"}\NormalTok{, }\StringTok{"MSE"}\NormalTok{)}
+\SpecialCharTok{+}\NormalTok{   results\_trans }\OtherTok{\textless{}{-}} \FunctionTok{as.data.frame}\NormalTok{(}\FunctionTok{t}\NormalTok{(results))}
+\SpecialCharTok{+}   \CommentTok{\# add a column to calculate the bias}
+\SpecialCharTok{+}\NormalTok{   par\_m }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\FloatTok{0.265}\NormalTok{, }\FloatTok{0.053}\NormalTok{,}\FloatTok{0.7693}\NormalTok{), }\DecValTok{6}\NormalTok{,}\DecValTok{1}\NormalTok{)}
+\SpecialCharTok{+}\NormalTok{   results\_trans}\SpecialCharTok{$}\NormalTok{Bias }\OtherTok{\textless{}{-}}\NormalTok{ results\_trans}\SpecialCharTok{$}\NormalTok{Mean }\SpecialCharTok{{-}}\NormalTok{ par\_m}
+\SpecialCharTok{+}\NormalTok{   results\_trans}\SpecialCharTok{$}\NormalTok{Parameter }\OtherTok{\textless{}{-}}\NormalTok{ par\_m}
+\SpecialCharTok{+}\NormalTok{   results\_trans }\OtherTok{\textless{}{-}}\NormalTok{ results\_trans[,}\FunctionTok{c}\NormalTok{(}\DecValTok{6}\NormalTok{,}\DecValTok{1}\NormalTok{,}\DecValTok{3}\NormalTok{,}\DecValTok{2}\NormalTok{,}\DecValTok{5}\NormalTok{,}\DecValTok{4}\NormalTok{)]}
+\SpecialCharTok{+}   \FunctionTok{return}\NormalTok{(results\_trans)}
+\SpecialCharTok{+}\NormalTok{ \}}
+\SpecialCharTok{\textgreater{}} \FunctionTok{est\_out}\NormalTok{(estimates, R)}
 \NormalTok{         Parameter    Mean     SE   Variance     Bias        MSE}
 \NormalTok{b0         }\SpecialCharTok{{-}}\FloatTok{0.2650}  \SpecialCharTok{{-}}\FloatTok{0.265}  \FloatTok{0.020}      \FloatTok{0.415}   \FloatTok{0.0000}      \FloatTok{0.415}
 \NormalTok{b1          }\FloatTok{0.0530}   \FloatTok{0.053}  \FloatTok{0.000}      \FloatTok{0.000}   \FloatTok{0.0000}      \FloatTok{0.000}
@@ -294,6 +299,58 @@ the \texttt{dat\_gen()} function above.
 \NormalTok{b0\_a       }\SpecialCharTok{{-}}\FloatTok{0.2650}  \SpecialCharTok{{-}}\FloatTok{5.143}  \FloatTok{1.887}   \FloatTok{3558.920}  \SpecialCharTok{{-}}\FloatTok{4.8780}   \FloatTok{3579.161}
 \NormalTok{b1\_a        }\FloatTok{0.0530}   \FloatTok{0.146}  \FloatTok{0.036}      \FloatTok{1.317}   \FloatTok{0.0930}      \FloatTok{1.324}
 \NormalTok{sig\_sq\_a    }\FloatTok{0.7693} \FloatTok{121.727} \FloatTok{29.594} \FloatTok{875788.198} \FloatTok{120.9577} \FloatTok{889543.113}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{bootstrap-method}{%
+\subsection{5.0 Bootstrap method}\label{bootstrap-method}}
+
+The bootstrap method is a statistical technique that involves the
+repeated sampling with replacement from the original data to obtain
+estimates of variability and uncertainty of a statistic of interest.
+Specifically, the statistic is computed on each of the resamples, and
+the resulting distribution is used to calculate confidence intervals or
+conduct hypothesis tests. Since we have a single sample of 40
+observations in this context, the bootstrap method is proposed to be
+applied to the row indices of the original dataset. Each resample would
+be created based on the shuffled indices of the original data, thus
+allowing for the generation of multiple estimates of the statistic of
+interest.
+
+The R function for bootstrap is as follows.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\SpecialCharTok{\textgreater{}} \CommentTok{\# generate a single dataset}
+\ErrorTok{\textgreater{}}\NormalTok{ data\_b }\OtherTok{\textless{}{-}}\FunctionTok{dat\_gen}\NormalTok{(}\AttributeTok{size =} \DecValTok{40}\NormalTok{,}\AttributeTok{betas =} \FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\FloatTok{0.265}\NormalTok{,}\FloatTok{0.053}\NormalTok{),}
+\SpecialCharTok{+}                 \AttributeTok{iv\_mean =} \FloatTok{51.24985}\NormalTok{, }\AttributeTok{iv\_var =} \FloatTok{100.6209}\NormalTok{,}
+\SpecialCharTok{+}                 \AttributeTok{error\_sd =} \FloatTok{0.7693}\NormalTok{)}
+\SpecialCharTok{\textgreater{}} \CommentTok{\# run bootstrapping on this single dataset}
+\ErrorTok{\textgreater{}}\NormalTok{ B }\OtherTok{=} \DecValTok{1000}
+\SpecialCharTok{\textgreater{}} \CommentTok{\# shuffle the 1:40 index rather than data\_b}
+\ErrorTok{\textgreater{}}\NormalTok{ boot\_index }\OtherTok{\textless{}{-}} \FunctionTok{replicate}\NormalTok{(}\AttributeTok{n=}\NormalTok{B,}
+\SpecialCharTok{+}                        \AttributeTok{expr =} \FunctionTok{sample}\NormalTok{(}\DecValTok{1}\SpecialCharTok{:}\DecValTok{40}\NormalTok{, }\DecValTok{40}\NormalTok{, }\ConstantTok{TRUE}\NormalTok{),}
+\SpecialCharTok{+}                        \AttributeTok{simplify =} \ConstantTok{FALSE}\NormalTok{)}
+\SpecialCharTok{\textgreater{}} \CommentTok{\# use the bootstrapped indices to extracted the data}
+\ErrorTok{\textgreater{}}\NormalTok{ boot\_samp }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{()}
+\SpecialCharTok{\textgreater{}} \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\DecValTok{1000}\NormalTok{) \{}
+\SpecialCharTok{+}\NormalTok{   boot\_unit }\OtherTok{\textless{}{-}}\NormalTok{ data\_b[boot\_index[[i]],]}
+\SpecialCharTok{+}\NormalTok{   boot\_samp[[i]] }\OtherTok{\textless{}{-}}\NormalTok{ boot\_unit}
+\SpecialCharTok{+}\NormalTok{ \}}
+\SpecialCharTok{\textgreater{}}\NormalTok{ estimates }\OtherTok{\textless{}{-}} \FunctionTok{sapply}\NormalTok{(}\AttributeTok{X =}\NormalTok{ boot\_samp,}
+\SpecialCharTok{+}                     \AttributeTok{FUN =}\NormalTok{ reg,}
+\SpecialCharTok{+}                     \AttributeTok{simplify =} \ConstantTok{TRUE}\NormalTok{)}
+\SpecialCharTok{\textgreater{}}\NormalTok{ estimates }\OtherTok{\textless{}{-}} \FunctionTok{t}\NormalTok{(estimates)}
+\SpecialCharTok{\textgreater{}} \FunctionTok{colnames}\NormalTok{(estimates) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"b0"}\NormalTok{, }\StringTok{"b1"}\NormalTok{, }\StringTok{"sig\_sq"}\NormalTok{, }\StringTok{"b0\_a"}\NormalTok{, }\StringTok{"b1\_a"}\NormalTok{, }\StringTok{"sig\_sq\_a"}\NormalTok{)}
+\SpecialCharTok{\textgreater{}} 
+\ErrorTok{\textgreater{}} \FunctionTok{est\_out}\NormalTok{(estimates, B)}
+\NormalTok{         Parameter     Mean       SE     Variance      Bias          MSE}
+\NormalTok{b0         }\SpecialCharTok{{-}}\FloatTok{0.2650}   \SpecialCharTok{{-}}\FloatTok{0.568}    \FloatTok{0.019} \FloatTok{3.670000e{-}01}   \SpecialCharTok{{-}}\FloatTok{0.3030} \FloatTok{4.580000e{-}01}
+\NormalTok{b1          }\FloatTok{0.0530}    \FloatTok{0.058}    \FloatTok{0.000} \FloatTok{0.000000e+00}    \FloatTok{0.0050} \FloatTok{0.000000e+00}
+\NormalTok{sig\_sq      }\FloatTok{0.7693}    \FloatTok{0.477}    \FloatTok{0.004} \FloatTok{1.200000e{-}02}   \SpecialCharTok{{-}}\FloatTok{0.2923} \FloatTok{9.800000e{-}02}
+\NormalTok{b0\_a       }\SpecialCharTok{{-}}\FloatTok{0.2650}    \FloatTok{2.819}    \FloatTok{7.072} \FloatTok{5.000976e+04}    \FloatTok{3.0840} \FloatTok{4.996926e+04}
+\NormalTok{b1\_a        }\FloatTok{0.0530}   \SpecialCharTok{{-}}\FloatTok{0.010}    \FloatTok{0.139} \FloatTok{1.922100e+01}   \SpecialCharTok{{-}}\FloatTok{0.0630} \FloatTok{1.920600e+01}
+\NormalTok{sig\_sq\_a    }\FloatTok{0.7693} \FloatTok{3220.335} \FloatTok{2961.135} \FloatTok{8.768318e+09} \FloatTok{3219.5657} \FloatTok{8.769915e+09}
 \end{Highlighting}
 \end{Shaded}
 
