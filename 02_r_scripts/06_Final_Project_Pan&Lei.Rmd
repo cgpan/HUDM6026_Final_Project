@@ -145,7 +145,7 @@ est_out <- function(esti_mat, size){
   results_trans <- results_trans[,c(6,1,3,2,5,4)]
   return(results_trans)
 }
-est_out(estimates, R)
+(mc_out <- est_out(estimates, R))
 ```  
 
 ## 5.0 Bootstrap method  
@@ -176,7 +176,7 @@ estimates <- sapply(X = boot_samp,
 estimates <- t(estimates)
 colnames(estimates) <- c("b0", "b1", "sig_sq", "b0_a", "b1_a", "sig_sq_a")
 
-est_out(estimates, B)
+(bs_out<-est_out(estimates, B))
 ```  
 
 ## 6.0 Jacknife method  
@@ -186,30 +186,39 @@ The jackknife method is a statistical technique to estimate the bias and varianc
 ```{r}
 jack_list <- list()
 for (i in 1:40) {
+  # each round drop the ith observation
   data_loov <- data_b[-i,]
+  # make a list to load each jacknife sample
   jack_list[[i]] <- data_loov
 }
-
 
 estimates <- sapply(X = jack_list,
                     FUN = reg,
                     simplify = TRUE)
-estimates <- t(estimates)
+estimates <- t(estimates) 
+# this is a 40 x 6 matrix
 colnames(estimates) <- c("b0", "b1", "sig_sq", "b0_a", "b1_a", "sig_sq_a")
 
-# get the observed
-data_b_mean <- apply(data_b, 2, mean)
-# estimate the bias  
-# first to make a parameter matrix in shape of the estimates matrix
-theta_m <- matrix(c(-0.265, 0.053,0.7693), nrow(esti_mat),6 , byrow = T)
-# use the estimates matrix minus the parameter matrix
-est_cent <- esti_mat - theta_m
-# use apply to get the mse for each estimates
-estimates_hat_mean <- round(apply(esti_mat,2,mean),3)
-estimates_hat_var <- round(apply(esti_mat,2,var),3)
-estimates_hat_se <- round(apply(esti_mat,2,function(x) sd(x)/sqrt(size)),3)
-estimates_mse <- round(apply(est_cent,2,function(x) sum(x^2)/size),3)
+# since the population parameter is known, we use them directly
+(jn_out<-est_out(estimates, 40))
 ```  
+One should notice that the population information is available in this simulated study. Therefore, we chose to not use the plug-in principle to estimate the bias or MSE.   
+
+```{r, echo=FALSE,eval=FALSE}
+# this part won't display in the final rmd pdf, but it still runs to output the table
+# if you wanna run these code, please set the eval=TRUE in this chunk setting
+final_result <- rbind(mc_out, bs_out, jn_out)
+write.csv(final_result, "~/Desktop/PhD_Learning/HUDM6026 Computational Statistics/HUDM6026_Final_Project/03_outputs/02_final_results.csv")
+```  
+
+
+## 7.0 Comparing the results  
+
+*Table 1* combines the outcomes from all three methods. 
+
+![]("~/Desktop/PhD_Learning/HUDM6026 Computational Statistics/HUDM6026_Final_Project/03_outputs/04_output_APA.png")  
+
+
 
 
 

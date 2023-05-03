@@ -291,7 +291,7 @@ the \texttt{dat\_gen()} function above.
 \SpecialCharTok{+}\NormalTok{   results\_trans }\OtherTok{\textless{}{-}}\NormalTok{ results\_trans[,}\FunctionTok{c}\NormalTok{(}\DecValTok{6}\NormalTok{,}\DecValTok{1}\NormalTok{,}\DecValTok{3}\NormalTok{,}\DecValTok{2}\NormalTok{,}\DecValTok{5}\NormalTok{,}\DecValTok{4}\NormalTok{)]}
 \SpecialCharTok{+}   \FunctionTok{return}\NormalTok{(results\_trans)}
 \SpecialCharTok{+}\NormalTok{ \}}
-\SpecialCharTok{\textgreater{}} \FunctionTok{est\_out}\NormalTok{(estimates, R)}
+\SpecialCharTok{\textgreater{}}\NormalTok{ (mc\_out }\OtherTok{\textless{}{-}} \FunctionTok{est\_out}\NormalTok{(estimates, R))}
 \NormalTok{         Parameter    Mean     SE   Variance     Bias        MSE}
 \NormalTok{b0         }\SpecialCharTok{{-}}\FloatTok{0.2650}  \SpecialCharTok{{-}}\FloatTok{0.265}  \FloatTok{0.020}      \FloatTok{0.415}   \FloatTok{0.0000}      \FloatTok{0.415}
 \NormalTok{b1          }\FloatTok{0.0530}   \FloatTok{0.053}  \FloatTok{0.000}      \FloatTok{0.000}   \FloatTok{0.0000}      \FloatTok{0.000}
@@ -343,7 +343,7 @@ The R function for bootstrap is as follows.
 \SpecialCharTok{\textgreater{}}\NormalTok{ estimates }\OtherTok{\textless{}{-}} \FunctionTok{t}\NormalTok{(estimates)}
 \SpecialCharTok{\textgreater{}} \FunctionTok{colnames}\NormalTok{(estimates) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"b0"}\NormalTok{, }\StringTok{"b1"}\NormalTok{, }\StringTok{"sig\_sq"}\NormalTok{, }\StringTok{"b0\_a"}\NormalTok{, }\StringTok{"b1\_a"}\NormalTok{, }\StringTok{"sig\_sq\_a"}\NormalTok{)}
 \SpecialCharTok{\textgreater{}} 
-\ErrorTok{\textgreater{}} \FunctionTok{est\_out}\NormalTok{(estimates, B)}
+\ErrorTok{\textgreater{}}\NormalTok{ (bs\_out}\OtherTok{\textless{}{-}}\FunctionTok{est\_out}\NormalTok{(estimates, B))}
 \NormalTok{         Parameter     Mean       SE     Variance      Bias          MSE}
 \NormalTok{b0         }\SpecialCharTok{{-}}\FloatTok{0.2650}   \SpecialCharTok{{-}}\FloatTok{0.568}    \FloatTok{0.019} \FloatTok{3.670000e{-}01}   \SpecialCharTok{{-}}\FloatTok{0.3030} \FloatTok{4.580000e{-}01}
 \NormalTok{b1          }\FloatTok{0.0530}    \FloatTok{0.058}    \FloatTok{0.000} \FloatTok{0.000000e+00}    \FloatTok{0.0050} \FloatTok{0.000000e+00}
@@ -354,5 +354,55 @@ The R function for bootstrap is as follows.
 \end{Highlighting}
 \end{Shaded}
 
+\hypertarget{jacknife-method}{%
+\subsection{6.0 Jacknife method}\label{jacknife-method}}
+
+The jackknife method is a statistical technique to estimate the bias and
+variance of a statistic by systematically leaving out one observation at
+a time from the dataset, creating a series of ``jackknife samples''. By
+recalculating the statistic of interest on each of these samples, we can
+obtain an approximation of the distribution of the statistic, and use it
+to estimate its bias and standard error. In the present context, we
+applied the jacknife method to the same 40-observation dataset.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\SpecialCharTok{\textgreater{}}\NormalTok{ jack\_list }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{()}
+\SpecialCharTok{\textgreater{}} \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\DecValTok{40}\NormalTok{) \{}
+\SpecialCharTok{+}   \CommentTok{\# each round drop the ith observation}
+\SpecialCharTok{+}\NormalTok{   data\_loov }\OtherTok{\textless{}{-}}\NormalTok{ data\_b[}\SpecialCharTok{{-}}\NormalTok{i,]}
+\SpecialCharTok{+}   \CommentTok{\# make a list to load each jacknife sample}
+\SpecialCharTok{+}\NormalTok{   jack\_list[[i]] }\OtherTok{\textless{}{-}}\NormalTok{ data\_loov}
+\SpecialCharTok{+}\NormalTok{ \}}
+\SpecialCharTok{\textgreater{}} 
+\ErrorTok{\textgreater{}}\NormalTok{ estimates }\OtherTok{\textless{}{-}} \FunctionTok{sapply}\NormalTok{(}\AttributeTok{X =}\NormalTok{ jack\_list,}
+\SpecialCharTok{+}                     \AttributeTok{FUN =}\NormalTok{ reg,}
+\SpecialCharTok{+}                     \AttributeTok{simplify =} \ConstantTok{TRUE}\NormalTok{)}
+\SpecialCharTok{\textgreater{}}\NormalTok{ estimates }\OtherTok{\textless{}{-}} \FunctionTok{t}\NormalTok{(estimates) }
+\SpecialCharTok{\textgreater{}} \CommentTok{\# this is a 40 x 6 matrix}
+\ErrorTok{\textgreater{}} \FunctionTok{colnames}\NormalTok{(estimates) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"b0"}\NormalTok{, }\StringTok{"b1"}\NormalTok{, }\StringTok{"sig\_sq"}\NormalTok{, }\StringTok{"b0\_a"}\NormalTok{, }\StringTok{"b1\_a"}\NormalTok{, }\StringTok{"sig\_sq\_a"}\NormalTok{)}
+\SpecialCharTok{\textgreater{}} 
+\ErrorTok{\textgreater{}} \CommentTok{\# since the population parameter is known, we use them directly}
+\ErrorTok{\textgreater{}}\NormalTok{ (jn\_out}\OtherTok{\textless{}{-}}\FunctionTok{est\_out}\NormalTok{(estimates, }\DecValTok{40}\NormalTok{))}
+\NormalTok{         Parameter   Mean     SE   Variance    Bias        MSE}
+\NormalTok{b0         }\SpecialCharTok{{-}}\FloatTok{0.2650} \SpecialCharTok{{-}}\FloatTok{0.533}  \FloatTok{0.016}      \FloatTok{0.010} \SpecialCharTok{{-}}\FloatTok{0.2680}      \FloatTok{0.082}
+\NormalTok{b1          }\FloatTok{0.0530}  \FloatTok{0.057}  \FloatTok{0.000}      \FloatTok{0.000}  \FloatTok{0.0040}      \FloatTok{0.000}
+\NormalTok{sig\_sq      }\FloatTok{0.7693}  \FloatTok{0.510}  \FloatTok{0.003}      \FloatTok{0.000} \SpecialCharTok{{-}}\FloatTok{0.2593}      \FloatTok{0.068}
+\NormalTok{b0\_a       }\SpecialCharTok{{-}}\FloatTok{0.2650} \SpecialCharTok{{-}}\FloatTok{4.347}  \FloatTok{6.444}   \FloatTok{1661.026} \SpecialCharTok{{-}}\FloatTok{4.0820}   \FloatTok{1636.160}
+\NormalTok{b1\_a        }\FloatTok{0.0530}  \FloatTok{0.133}  \FloatTok{0.129}      \FloatTok{0.667}  \FloatTok{0.0800}      \FloatTok{0.657}
+\NormalTok{sig\_sq\_a    }\FloatTok{0.7693} \FloatTok{96.400} \FloatTok{87.796} \FloatTok{308322.929} \FloatTok{95.6307} \FloatTok{309760.012}
+\end{Highlighting}
+\end{Shaded}
+
+One should notice that the population information is available in this
+simulated study. Therefore, we chose to not use the plug-in principle to
+estimate the bias or MSE.
+
+\hypertarget{comparing-the-results}{%
+\subsection{7.0 Comparing the results}\label{comparing-the-results}}
+
+\emph{Table 1} combines the outcomes from all three methods.
+
+\includegraphics{"~/Desktop/PhD_Learning/HUDM6026 Computational Statistics/HUDM6026_Final_Project/03_outputs/04_output_APA.png"}
 
 \end{document}
