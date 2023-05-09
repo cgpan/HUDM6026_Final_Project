@@ -3,7 +3,7 @@ title: "Data Simulations with a Simple Linear Regression Model"
 subtitle: "HUDM6026 Final Project"
 author:
   - Chenguang Pan   cp3280@tc.columbia.edu                                    
-  - Seng Lei        sl4846@tc.columbia.edu  
+  - Sen Lei        sl4846@tc.columbia.edu  
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   pdf_document:
