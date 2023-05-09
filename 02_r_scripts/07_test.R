@@ -29,3 +29,6 @@ dim(estimates)
 121.135**2+875788.198
 0.093**2 + 1.317
 0.007*0.007 + 0.017
+
+install.packages('tinytex')
+tinytex::install_tinytex()
